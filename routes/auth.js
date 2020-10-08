@@ -54,7 +54,6 @@ router.get("/", auth, async (req, res) => {
     Response.details = details;
     Response.files = files;
     Response.notifications = notifications;
-    console.log(Response);
     res.status(200).json(Response);
     return;
   } catch (err) {
