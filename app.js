@@ -11,12 +11,6 @@ const app = express();
 
 // connect database
 connectDB();
-//  define routes
-app.use("/api/users", require("./routes/users"));
-app.use("/api/notifications", require("./routes/notifications"));
-app.use("/api/requests", require("./routes/requests"));
-app.use("/api/auth", require("./routes/auth"));
-app.use("/api/society", require("./routes/society"));
 
 // view engine setup
 // app.set("views", path.join(__dirname, "views"));
@@ -26,6 +20,14 @@ app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+
+//  define routes
+app.use("/api/users", require("./routes/users"));
+app.use("/api/notifications", require("./routes/notifications"));
+app.use("/api/requests", require("./routes/requests"));
+app.use("/api/auth", require("./routes/auth"));
+app.use("/api/society", require("./routes/society"));
+
 app.use(express.static(path.join(__dirname, "client", "build")));
 app.get("/*", function (req, res) {
   res.sendFile(path.join(__dirname, "client", "build", "index.html"));
