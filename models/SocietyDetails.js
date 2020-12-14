@@ -2,7 +2,8 @@ const mongoose = require("mongoose");
 
 const SocietyDetailsSchema = mongoose.Schema({
   userId: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
     required: true,
   },
   name: {
@@ -37,6 +38,7 @@ const SocietyDetailsSchema = mongoose.Schema({
   },
   lastElection: {
     type: Date,
+    required: true,
   },
   dateApproved: {
     type: Date,
@@ -58,16 +60,12 @@ const SocietyDetailsSchema = mongoose.Schema({
   state: {
     type: String,
   },
-  lastAudit: { type: Date },
-  lastAuditYear: { type: Date },
-  auditClass: { type: String },
-  paidUpShareCapital: { type: String },
-  membersList: {
-    type: [Map],
-  },
-  files: {
-    type: [Map],
-  },
+  lastAudit: Date,
+  lastAuditYear: Date,
+  auditClass: String,
+  paidUpShareCapital: String,
+  membersList: [Map],
+  byaws: String,
   approved: {
     type: Boolean,
     default: false,

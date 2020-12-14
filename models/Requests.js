@@ -2,34 +2,37 @@ const mongoose = require("mongoose");
 
 const RequestsSchema = mongoose.Schema({
   senderId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  receiverId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  },
+  title: {
     type: String,
     required: true,
   },
-  type: {
+  toAdmin: Boolean,
+  changeProfile: Boolean,
+  description: {
     type: String,
-    enum: ["Society profile update", "Members update", "Election"],
     required: true,
   },
   content: {
-    type: Map,
-    of: String,
+    type: Array,
     required: true,
   },
   status: {
     type: String,
-    enum: ["pending", "approved", "rejected", "cancelled"],
+    enum: ["Pending", "Approved", "Cancelled"],
     required: true,
-    default: "pending",
-  },
-  comment: {
-    type: String,
+    default: "Pending",
   },
   dateCreated: {
     type: Date,
     default: Date.now,
-  },
-  dateCommented: {
-    type: Date,
   },
 });
 

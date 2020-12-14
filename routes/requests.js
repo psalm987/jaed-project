@@ -4,113 +4,216 @@ const auth = require("../middleware/auth");
 const SocietyDetails = require("../models/SocietyDetails");
 const Requests = require("../models/Requests");
 const User = require("../models/User");
+const { Types } = require("mongoose");
+const Forms = require("../models/Forms");
+const Comments = require("../models/Comments");
 
 /**
- * @route       POST api/requests/elect
- * @description Request to Elect officials
- * @access      Private (For Societies only)
- */
-router.post("/elect", auth, async (req, res) => {
-  if (req.user.role !== "society") {
-    res.status(400).json("This account cannot request an election");
-    return;
-  }
-  try {
-    const senderId = req.sender.id;
-    const { membersList } = req.body;
-    const request = new Requests({
-      senderId: senderId,
-      content: membersList,
-      type: "Election",
-    });
-    await request.save();
-    res.status(200).json({ msg: "Election request successful" });
-    return;
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ msg: "Server error" });
-    return;
-  }
-});
-
-/**
- * @route       POST api/requests/update
- * @description Request to Update Profile
- * @access      Private
- */
-router.post("/update", auth, async (req, res) => {
-  if (
-    ![
-      "society",
-      "legal",
-      "financial",
-      "intauditor",
-      "extauditor",
-      "consultant",
-    ].includes(req.user.role)
-  ) {
-    res.status(400).json("This account cannot request an update");
-    return;
-  }
-  try {
-    let RequestObj;
-    let request;
-    let type;
-    switch (req.user.role) {
-      case "society":
-        if (req.body.name) RequestObj.name = req.body.name;
-        if (req.body.regno) RequestObj.regno = req.body.regno;
-        if (req.body.industry) RequestObj.industry = req.body.industry;
-        if (req.body.address) RequestObj.address = req.body.address;
-        if (req.body.roadStreet) RequestObj.roadStreet = req.body.roadStreet;
-        if (req.body.lga) RequestObj.lga = req.body.lga;
-        if (req.body.state) RequestObj.state = req.body.state;
-        if (req.body.lastAudit) RequestObj.lastAudit = req.body.lastAudit;
-        if (req.body.lastAuditYear)
-          RequestObj.lastAuditYear = req.body.lastAuditYear;
-        if (req.body.auditClass) RequestObj.auditClass = req.body.auditClass;
-        if (req.body.paidUpShareCapital)
-          RequestObj.paidUpShareCapital = req.body.paidUpShareCapital;
-        if (req.body.membersList) RequestObj.membersList = req.body.membersList;
-        if (req.body.files) RequestObj.files = req.body.files;
-        type = "Society profile update";
-        break;
-      case "intauditor":
-      case "extauditor":
-        break;
-      case "consultant":
-        break;
-      case "legal":
-        break;
-      case "financial":
-        break;
-      default:
-        break;
-    }
-    request = new Requests({
-      senderId: req.user.id,
-      content: RequestObj,
-      type,
-    });
-    await request.save();
-  } catch (err) {}
-});
-
-/**
- * @route       GET api/requests
+ * @route       GET api/requests/sent
  * @description Get all requests
  * @access      Private
  */
-router.get("/", auth, async (req, res) => {
+router.get("/sent", auth, async (req, res) => {
+  try {
+    let query;
+    if (["admin", "superAdmin"].includes(req.user.role)) {
+      query = { toAdmin: true };
+    } else {
+      query = {
+        senderId: Types.ObjectId(req.user.id),
+      };
+    }
+    const requests = await Requests.find(query)
+      .populate("senderId", "name _id")
+      .select("_id title description status dateCreated senderId");
+    res.status(200).json(requests);
+    return;
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ msg: "Server Error" });
+    return;
+  }
+});
+
+/**
+ * @route       GET api/requests/:id
+ * @description Get single request
+ * @access      Private
+ */
+router.get("/:id", auth, async (req, res) => {
+  try {
+    const request = await Requests.findById(req.params.id)
+      .populate("receiverId", "name")
+      .populate("senderId", "name");
+    if (!request) {
+      res.status(404).json({ msg: "Not found" });
+      return;
+    }
+    if (
+      request.senderId._id.toString() !== req.user.id &&
+      (!request.receiverId ||
+        request.receiverId._id.toString() !== req.user.id) &&
+      !["admin", "superAdmin"].includes(req.user.role)
+    ) {
+      res.status(400).json({ msg: "Not Authorized" });
+      return;
+    }
+    const comments = await Comments.find({ request: req.params.id })
+      .limit(50)
+      .sort("-dateCreated")
+      .populate("sender", "name role");
+    res.status(200).json({ request, comments });
+    return;
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ msg: "Server Error" });
+    return;
+  }
+});
+
+/**
+ * @route       POST api/requests
+ * @description Create request
+ * @access      Private
+ */
+router.post("/", auth, async (req, res) => {
   try {
     const senderId = req.user.id;
-    let requests;
-    if (req.user.role !== "admin") {
-      requests = await Requests.find();
-    } else {
-      requests = await Requests.find({ userId: req.user.id });
+    const {
+      title,
+      description,
+      changeProfile,
+      receiverId,
+      content,
+      toAdmin,
+    } = req.body;
+    await new Requests({
+      senderId,
+      title,
+      description,
+      changeProfile,
+      receiverId,
+      content,
+      toAdmin,
+    }).save();
+    res.status(200).json({ msg: "Request made successfully" });
+    return;
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ msg: "Server Error" });
+    return;
+  }
+});
+
+/**
+ * @route       POST api/requests/approve/:id
+ * @description Approve a request
+ * @access      Private
+ */
+router.post("/approve/:id", auth, async (req, res) => {
+  try {
+    const request = await Requests.findById(req.params.id).populate(
+      "senderId",
+      "role"
+    );
+    if (!request) {
+      res.status(404).json({ msg: "Not found" });
+      return;
     }
-    res.status(200).json(result);
+    if (["admin", "superAdmin"].includes(req.user.role) && request.toAdmin) {
+      await request.updateOne({ status: "Approved" });
+      if (request.changeProfile) {
+        console.log("Change Profile...");
+        let update = {};
+        request.content.map((item) => {
+          update = { ...update, [`${item.propName}`]: item.value };
+        });
+        update = {
+          ...update,
+          dateUpdated: request.dateCreated,
+          dateApproved: new Date(),
+          status: "approved",
+          approved: true,
+        };
+        console.log("Update...", update);
+        switch (request.senderId.role) {
+          case "society":
+            console.log("User...", request.senderId);
+            await SocietyDetails.findOneAndUpdate(
+              { userId: Types.ObjectId(request.senderId._id) },
+              update
+            );
+            console.log("Updated...");
+            break;
+          default:
+            break;
+        }
+      }
+    } else {
+      res.status(400).status({ msg: "Not Authorized" });
+      return;
+    }
+    res.status(200).json({ msg: "Request approved" });
+    return;
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Server Error" });
+    return;
+  }
+});
+
+/**
+ * @route       POST api/requests/cancel/:id
+ * @description Cancel a request
+ * @access      Private
+ */
+router.post("/cancel/:id", auth, async (req, res) => {
+  try {
+    const request = await Requests.findById(req.params.id);
+    if (
+      request.senderId.toString() === req.user.id ||
+      (["admin", "superAdmin"].includes(req.user.role) && request.toAdmin)
+    ) {
+      await request.updateOne({ status: "Cancelled" });
+    } else {
+      res.status(400).status({ msg: "Not Authorized" });
+      return;
+    }
+    res.status(200).json({ msg: "Request approved" });
+    return;
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Server Error" });
+    return;
+  }
+});
+
+/**
+ * @route       POST api/requests/comment/:id
+ * @description Comment on a request
+ * @access      Private
+ */
+router.post("/comment/:id", auth, async (req, res) => {
+  try {
+    const request = req.params.id;
+    const sender = req.user.id;
+    const { text } = req.body;
+    if (!text) {
+      res.status(400).json({ msg: "Bad Request" });
+      return;
+    }
+    await new Comments({
+      request,
+      sender,
+      text,
+    }).save();
+    const comments = await Comments.find({
+      request: Types.ObjectId(request),
+    })
+      .limit(50)
+      .sort("-dateCreated")
+      .populate("sender", "name role");
+    res.status(200).json({ msg: "Comment made successfully", comments });
     return;
   } catch (error) {
     console.error(error);
@@ -134,18 +237,84 @@ router.post("/edit/:id", auth, async (req, res) => {
     }
     if (
       req.user.id !== request.userId ||
-      ["approved", "cancelled"].includes(request.status)
+      ["Approved", "Cancelled"].includes(request.status)
     ) {
       res.status(400).json({ msg: "No access" });
       return;
     }
-    const content = { ...request.content, ...req.body };
+    const content = req.body.content || request.content;
     const status = "pending";
     await request.updateOne({ content, status });
     res.status(200).json(request);
     return;
   } catch (error) {
     console.error(error);
+    res.status(500).json({ msg: "Server Error" });
+    return;
+  }
+});
+
+/**
+ * @route       POST api/requests/form
+ * @description Create a request form
+ * @access      Private (For Admin Only)
+ */
+router.post("/form", auth, async (req, res) => {
+  try {
+    const {
+      userTypes,
+      receiverId,
+      title,
+      description,
+      toAdmin,
+      changeProfile,
+      content,
+      postLink,
+      users,
+    } = req.body;
+    await Forms({
+      userTypes,
+      receiverId,
+      title,
+      description,
+      toAdmin,
+      changeProfile,
+      content,
+      postLink,
+      users,
+    }).save();
+    res.status(200).json({ msg: "Form created" });
+    return;
+  } catch (err) {
+    console.error(error);
+    res.status(500).json({ msg: "Server Error" });
+    return;
+  }
+});
+
+/**
+ * @route       GET api/requests/form/:id
+ * @description Create a retreive form
+ * @access      Private (For Admin Only)
+ */
+router.get("/form/:id", auth, async (req, res) => {
+  try {
+    const form = await Forms.findById(req.params.id);
+    if (!form) {
+      res.status(404).json({ msg: "Not found" });
+      return;
+    }
+    if (
+      (form.userTypes.length !== 0 &&
+        !form.userTypes.includes(req.user.role)) ||
+      (form.users.length !== 0 && !form.users.includes(req.user.id))
+    ) {
+      res.status(400).json({ msg: "Invalid request" });
+      return;
+    }
+    res.status(200).json(form);
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ msg: "Server Error" });
     return;
   }
@@ -170,83 +339,14 @@ router.post("/status-change", auth, async (req, res) => {
       res.status(400).json({ msg: "Invalid request id" });
       return;
     }
-    if (!["approved", "cancelled", "rejected"].includes(status)) {
+    if (!["Approved", "Cancelled", "Rejected"].includes(status)) {
       res.status(400).json({
         msg:
           "Status is not valid it can either be approved, cancelled or rejected",
       });
       return;
     }
-    const StatusObj = {};
-    StatusObj.status = status;
-    if (comment && req.user.role === "admin") {
-      StatusObj.comment = comment;
-      StatusObj.dateCommented = Date.now();
-    }
-    await request.update(StatusObj);
-    const society = await SocietyDetails.findOne({ userId: request.senderId });
-    if (status === "approved" && req.user.role === "admin") {
-      switch (request.type) {
-        case "Society profile update":
-          const {
-            name,
-            regno,
-            industry,
-            address,
-            roadStreet,
-            lga,
-            state,
-            lastAudit,
-            lastAuditYear,
-            auditClass,
-            paidUpShareCapital,
-            membersList,
-            files,
-          } = request.content;
-          const UpdateObj = {};
-          if (regno) {
-            UpdateObj.regno = regno;
-          } else if (req.body.regno) {
-            UpdateObj.regno = req.body.regno;
-          } else {
-            req.status(400).json({ msg: "No registration number available" });
-            return;
-          }
-
-          if (name) UpdateObj.name = name;
-          if (industry) UpdateObj.industry = industry;
-          if (address) UpdateObj.address = address;
-          if (roadStreet) UpdateObj.roadStreet = roadStreet;
-          if (lga) UpdateObj.lga = lga;
-          if (state) UpdateObj.state = state;
-          if (lastAudit) UpdateObj.lastAudit = lastAudit;
-          if (lastAuditYear) UpdateObj.lastAuditYear = lastAuditYear;
-          if (auditClass) UpdateObj.auditClass = auditClass;
-          if (paidUpShareCapital)
-            UpdateObj.paidUpShareCapital = paidUpShareCapital;
-          if (membersList) UpdateObj.membersList = membersList;
-          if (files) UpdateObj.files = files;
-          if (!society.dateApproved) UpdateObj.dateApproved = Date.now();
-          UpdateObj.dateUpdated = request.dateCreated;
-          await society.update(UpdateObj);
-          break;
-        case "Members update":
-          await society.update({
-            membersList: request.content,
-            dateUpdated: request.dateCreated,
-          });
-          break;
-        case "Election":
-          await society.update({
-            membersList: request.content,
-            lastElection: request.dateCreated,
-          });
-          break;
-        default:
-          res.status(400).json({ msg: "This approval was not handled" });
-          return;
-      }
-    }
+    // @TODO status chage
     res.status(200).json({ msg: "Request status change successful" });
     return;
   } catch (error) {
