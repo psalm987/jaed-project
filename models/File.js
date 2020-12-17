@@ -14,11 +14,16 @@ const FileSchema = mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ["Resource", "E-Learning"],
+    enum: ["Resource", "E-Learning", "Append"],
     default: "Resource",
   },
   userId: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  },
+  requestId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Requests",
   },
   details: {
     type: String,

@@ -5,7 +5,7 @@ const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 require("dotenv").config();
 
-const connectDB = require("./config/db");
+const { connectDB } = require("./config/db");
 
 const app = express();
 
@@ -47,7 +47,7 @@ app.use(function (err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  res.render("error");
+  res.json(err);
 });
 
 module.exports = app;

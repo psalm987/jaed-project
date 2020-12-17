@@ -2,7 +2,8 @@ const mongoose = require("mongoose");
 
 const AuditorDetailsSchema = mongoose.Schema({
   userId: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
     required: true,
   },
   dateCreated: {
@@ -81,6 +82,9 @@ const AuditorDetailsSchema = mongoose.Schema({
   },
   affidavitUrl: {
     type: String,
+  },
+  internal: {
+    type: Boolean,
   },
 });
 

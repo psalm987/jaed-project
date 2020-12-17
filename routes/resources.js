@@ -42,7 +42,6 @@ router.get("/", async (req, res) => {
   try {
     const files = await File.find().sort("-dateUploaded");
     console.log("files...", files);
-    console.log(files);
     res.status(200).json(files);
     return;
   } catch (err) {

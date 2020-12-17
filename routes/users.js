@@ -108,7 +108,7 @@ router.post(
       });
       notification.save();
     } catch (err) {
-      console.error(err.message);
+      console.error(err);
       res.status(500).json({ msg: "Server error" });
       return;
     }
@@ -164,7 +164,7 @@ router.post("/admin", async (req, res) => {
       }
     );
   } catch (error) {
-    console.error(err.message);
+    console.error(err);
     res.status(500).json({ msg: "Server error" });
     return;
   }
@@ -185,7 +185,37 @@ router.get("/admin", auth, async (req, res) => {
     const users = await User.find().sort("-dateCreated");
     res.status(200).json(users);
   } catch (err) {
-    console.log(err.message);
+    console.log(err);
+    res.status(500).json({ msg: "Server error" });
+    return;
+  }
+});
+
+/**
+ * @route       GET api/users/search/:role
+ * @description Search users
+ * @access      Private (admin)
+ */
+router.get("/search/:role", auth, async (req, res) => {
+  try {
+    const role = req.params.role;
+    let users = [];
+    switch (role) {
+      case "extauditor":
+        users = await AuditorDetails.find({
+          isApproved: true,
+          internal: { $ne: true },
+        });
+        break;
+      case "intauditor":
+        users = await AuditorDetails.find({ isApproved: true, internal: true });
+        break;
+      default:
+        break;
+    }
+    res.status(200).json(users);
+  } catch (err) {
+    console.log(err);
     res.status(500).json({ msg: "Server error" });
     return;
   }

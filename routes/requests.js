@@ -36,6 +36,140 @@ router.get("/sent", auth, async (req, res) => {
 });
 
 /**
+ * @route       GET api/requests/audits
+ * @description Change requests status using their id
+ * @access      Private (For Admin Only)
+ */
+router.get("/audits", auth, async (req, res) => {
+  try {
+    const requests = await Requests.find({
+      senderId: Types.ObjectId(req.user.id),
+    }).populate("receiverId", {
+      match: {
+        role: "extauditor",
+      },
+    });
+    console.log("audits", requests);
+    res
+      .status(200)
+      .json(
+        requests.filter((val) => val && val.receiverId && val.receiverId.role)
+      );
+    return;
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Server error" });
+    return;
+  }
+});
+
+/**
+ * @route       GET api/requests/legal
+ * @description Change requests status using their id
+ * @access      Private (For Admin Only)
+ */
+router.get("/legal", auth, async (req, res) => {
+  try {
+    const requests = await Requests.find({
+      senderId: Types.ObjectId(req.user.id),
+    }).populate("receiverId", {
+      match: {
+        role: "legal",
+      },
+    });
+    res
+      .status(200)
+      .json(
+        requests.filter((val) => val && val.receiverId && val.receiverId.role)
+      );
+    return;
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Server error" });
+    return;
+  }
+});
+
+/**
+ * @route       GET api/requests/consultants
+ * @description Change requests status using their id
+ * @access      Private (For Admin Only)
+ */
+router.get("/consultants", auth, async (req, res) => {
+  try {
+    const requests = await Requests.find({
+      senderId: Types.ObjectId(req.user.id),
+    }).populate("receiverId", {
+      match: {
+        role: "consultant",
+      },
+    });
+    res
+      .status(200)
+      .json(
+        requests.filter((val) => val && val.receiverId && val.receiverId.role)
+      );
+    return;
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Server error" });
+    return;
+  }
+});
+
+/**
+ * @route       GET api/requests/financials
+ * @description Change requests status using their id
+ * @access      Private (For Admin Only)
+ */
+router.get("/financials", auth, async (req, res) => {
+  try {
+    const requests = await Requests.find({
+      senderId: Types.ObjectId(req.user.id),
+    }).populate("receiverId", {
+      match: {
+        role: "financial",
+      },
+    });
+
+    res
+      .status(200)
+      .json(
+        requests.filter((val) => val && val.receiverId && val.receiverId.role)
+      );
+    return;
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Server error" });
+    return;
+  }
+});
+
+/**
+ * @route       GET api/requests/prof
+ * @description Change requests status using their id
+ * @access      Private (For Admin Only)
+ */
+router.get("/prof", auth, async (req, res) => {
+  try {
+    const sent = await Requests.find({
+      receiverId: Types.ObjectId(req.user.id),
+    }).populate("senderId");
+
+    const received = await Requests.find({
+      senderId: Types.ObjectId(req.user.id),
+    });
+
+    res.status(200).json({ sent, received });
+    return;
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Server error" });
+    return;
+  }
+});
+
+/**
  * @route       GET api/requests/:id
  * @description Get single request
  * @access      Private
@@ -230,7 +364,7 @@ router.post("/comment/:id", auth, async (req, res) => {
 router.post("/edit/:id", auth, async (req, res) => {
   const { id } = req.params;
   try {
-    const request = await Request.findById(id);
+    const request = await Requests.findById(id);
     if (!request) {
       res.status(400).json({ msg: "Reqest does not exist" });
       return;
@@ -255,6 +389,64 @@ router.post("/edit/:id", auth, async (req, res) => {
 });
 
 /**
+ * @route       POST api/requests/append/:id
+ * @description append a file to a  request
+ * @access      Private
+ */
+router.post("/append/:id", auth, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const request = await Requests.findById(id);
+    if (!request) {
+      console.log("Reqest does not exist");
+      res.status(400).json({ msg: "Reqest does not exist" });
+      return;
+    }
+    if (
+      ![
+        request.senderId && request.senderId.toString(),
+        request.receiverId && request.receiverId.toString(),
+      ].includes(req.user.id)
+    ) {
+      console.log("Not Authorised");
+      console.log(request.senderId, request.receiverId, req.user.id);
+      res.status(400).json({ msg: "Not authorized" });
+      return;
+    }
+    const { propName, value, type, label } = req.body;
+    if (!(propName && value && type && label)) {
+      console.log({ propName, value, type, label });
+      res.status(400).json({ msg: "Bad request" });
+      return;
+    }
+    const content = request.content;
+    if (content.find((val, index) => val.propName === propName)) {
+      content.map((val) => {
+        switch (val.propName) {
+          case propName:
+            return { propName, value, type, label };
+          default:
+            return val;
+        }
+      });
+    } else {
+      content.push({ propName, value, type, label });
+    }
+    await request.updateOne({ content });
+    await Comments({
+      request: id,
+      sender: req.user.id,
+      text: "Made an update to this request",
+    }).save();
+    res.status(200).json({ msg: "Update Successful" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Server Error" });
+    return;
+  }
+});
+
+/**
  * @route       POST api/requests/form
  * @description Create a request form
  * @access      Private (For Admin Only)
@@ -271,6 +463,7 @@ router.post("/form", auth, async (req, res) => {
       content,
       postLink,
       users,
+      receiverRole,
     } = req.body;
     await Forms({
       userTypes,
@@ -282,11 +475,12 @@ router.post("/form", auth, async (req, res) => {
       content,
       postLink,
       users,
+      receiverRole,
     }).save();
     res.status(200).json({ msg: "Form created" });
     return;
   } catch (err) {
-    console.error(error);
+    console.error(err);
     res.status(500).json({ msg: "Server Error" });
     return;
   }

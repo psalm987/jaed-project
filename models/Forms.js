@@ -4,8 +4,12 @@ const FormsSchema = mongoose.Schema({
   userTypes: {
     type: Array,
   },
-  receiverId: {
+  receiverRole: {
     type: String,
+  },
+  receiverId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
   },
   title: {
     type: String,
