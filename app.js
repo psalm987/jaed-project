@@ -5,7 +5,7 @@ const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 require("dotenv").config();
 
-const { connectDB } = require("./config/db");
+const connectDB = require("./config/db");
 
 const app = express();
 
