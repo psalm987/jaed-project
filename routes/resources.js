@@ -41,7 +41,6 @@ router.post("/", auth, async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     const files = await File.find().sort("-dateUploaded");
-    console.log("files...", files);
     res.status(200).json(files);
     return;
   } catch (err) {
