@@ -17,10 +17,14 @@ const sendMail = (mailContent) => {
   if (mailContent.html)
     Mail.html = mailContent.html + "<p>Jaed Developers Team</p>";
   const mailOptions = Mail;
-  transporter.sendMail(mailOptions, function (error, info) {
-    if (error) throw error;
-    return info.response;
-  });
+  try {
+    transporter.sendMail(mailOptions, function (error, info) {
+      if (error) throw error;
+      return info.response;
+    });
+  } catch(err) {
+    console.error(err)
+  }
 };
 
 module.exports = { sendMail };
