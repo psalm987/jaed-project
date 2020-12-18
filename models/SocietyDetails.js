@@ -38,7 +38,6 @@ const SocietyDetailsSchema = mongoose.Schema({
   },
   lastElection: {
     type: Date,
-    required: true,
   },
   dateApproved: {
     type: Date,
