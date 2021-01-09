@@ -92,7 +92,9 @@ router.post(
     const { email, password } = req.body;
 
     try {
-      let user = await User.findOne({ email });
+      let user = await User.findOne({
+        email: { $regex: new RegExp(email, "i") },
+      });
 
       if (!user) {
         res.status(400).json({ msg: "Invalid email or password" });
