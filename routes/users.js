@@ -38,11 +38,11 @@ router.post(
 
     try {
       let user =
-        (await User.findOne({ email })) || (await User.findOne({ name }));
+        (await User.findOne({ email: { $regex: new RegExp(email, "i") } })) ||
+        (await User.findOne({ name: { $regex: new RegExp(name, "i") } }));
 
       if (user) {
         res.status(400).json({ msg: "User already exists" });
-
         return;
       }
 
