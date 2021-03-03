@@ -147,8 +147,8 @@ router.get("/financials", auth, async (req, res) => {
 
 /**
  * @route       GET api/requests/prof
- * @description Change requests status using their id
- * @access      Private (For Admin Only)
+ * @description Retrieve all requests for this profile
+ * @access      Private
  */
 router.get("/prof", auth, async (req, res) => {
   try {
