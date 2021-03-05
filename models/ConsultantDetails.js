@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const AuditorDetailsSchema = mongoose.Schema({
+const ConsultantDetailsSchema = mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
@@ -20,12 +20,6 @@ const AuditorDetailsSchema = mongoose.Schema({
   name: {
     type: String,
   },
-  regNo: {
-    type: String,
-  },
-  accreditationDate: {
-    type: Date,
-  },
   address: {
     type: String,
   },
@@ -42,12 +36,6 @@ const AuditorDetailsSchema = mongoose.Schema({
     type: String,
   },
   contactName: {
-    type: String,
-  },
-  contactMembershipNo: {
-    type: String,
-  },
-  contactMembershipCardUrl: {
     type: String,
   },
   contactPhotoUrl: {
@@ -71,21 +59,6 @@ const AuditorDetailsSchema = mongoose.Schema({
   contactDegreeProofUrl: {
     type: String,
   },
-  auditExperience: {
-    type: [Map],
-  },
-  cardUrl: {
-    type: String,
-  },
-  constitutionalCertificateUrl: {
-    type: String,
-  },
-  affidavitUrl: {
-    type: String,
-  },
-  internal: {
-    type: Boolean,
-  },
 });
 
-module.exports = mongoose.model("AuditorDetails", AuditorDetailsSchema);
+module.exports = mongoose.model("ConsultantDetails", ConsultantDetailsSchema);

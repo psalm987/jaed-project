@@ -13,11 +13,6 @@ const SocietyDetailsSchema = mongoose.Schema({
   class: {
     type: String,
   },
-  type: {
-    type: String,
-    enum: ["Primary", "Secondary", "Tertiary"],
-    required: true,
-  },
   industry: {
     type: String,
     enum: [
@@ -43,6 +38,7 @@ const SocietyDetailsSchema = mongoose.Schema({
   },
   lastElection: {
     type: Date,
+    required: true,
   },
   dateApproved: {
     type: Date,

@@ -7,6 +7,10 @@ const User = require("../models/User");
 const { Types } = require("mongoose");
 const Forms = require("../models/Forms");
 const Comments = require("../models/Comments");
+const AuditorDetails = require("../models/AuditorDetails");
+const LegalDetails = require("../models/LegalDetails");
+const ConsultantDetails = require("../models/ConsultantDetails");
+const FinancialDetails = require("../models/FinancialDetails");
 
 /**
  * @route       GET api/requests/sent
@@ -268,6 +272,7 @@ router.post("/approve/:id", auth, async (req, res) => {
           dateApproved: new Date(),
           status: "approved",
           approved: true,
+          isApproved: true,
         };
         console.log("Update...", update);
         switch (request.senderId.role) {
@@ -275,7 +280,45 @@ router.post("/approve/:id", auth, async (req, res) => {
             console.log("User...", request.senderId);
             await SocietyDetails.findOneAndUpdate(
               { userId: Types.ObjectId(request.senderId._id) },
-              update
+              update,
+              { upsert: true }
+            );
+            console.log("Updated...");
+            break;
+          case "extauditor":
+          case "intauditor":
+            console.log("User...", request.senderId);
+            await AuditorDetails.findOneAndUpdate(
+              { userId: Types.ObjectId(request.senderId._id) },
+              update,
+              { upsert: true }
+            );
+            console.log("Updated...");
+            break;
+          case "legal":
+            console.log("User...", request.senderId);
+            await LegalDetails.findOneAndUpdate(
+              { userId: Types.ObjectId(request.senderId._id) },
+              update,
+              { upsert: true }
+            );
+            console.log("Updated...");
+            break;
+          case "consultant":
+            console.log("User...", request.senderId);
+            await ConsultantDetails.findOneAndUpdate(
+              { userId: Types.ObjectId(request.senderId._id) },
+              update,
+              { upsert: true }
+            );
+            console.log("Updated...");
+            break;
+          case "financial":
+            console.log("User...", request.senderId);
+            await FinancialDetails.findOneAndUpdate(
+              { userId: Types.ObjectId(request.senderId._id) },
+              update,
+              { upsert: true }
             );
             console.log("Updated...");
             break;
