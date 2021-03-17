@@ -10,6 +10,78 @@ const AuditorDetails = require("../models/AuditorDetails");
 const Notifications = require("../models/Notifications");
 const auth = require("../middleware/auth");
 const mail = require("../mail/mailService");
+const LegalDetails = require("../models/LegalDetails");
+const FinancialDetails = require("../models/FinancialDetails");
+const ConsultantDetails = require("../models/ConsultantDetails");
+
+/**
+ * @route       POST api/users/mock
+ * @description Register fake  users
+ * @access      Public
+ */
+
+router.post("/mock", async (req, res) => {
+  const { access, users } = req;
+  if (!access || access !== process.env.PASSWORD) {
+    req.status(400).json({ msg: "Not Authorized" });
+    return;
+  }
+  if (!Array.isArray(users)) {
+    req.status(400).json({ msg: "User Information Not correct" });
+    return;
+  }
+  try {
+    const hashedUsers = await Promise.all(
+      users.map(async (user) => {
+        const salt = await bcrypt.genSalt(10);
+        return { ...user, password: await bcrypt.hash(user.password, salt) };
+      })
+    );
+    const Errors = [];
+    await Promise.all(
+      hashedUsers.map(async (user) => {
+        const { name, email, password, role } = user;
+        const userObj = User({ name, email, password, role });
+        await userObj.save();
+        let Model;
+        let extra = { userId: userObj.id };
+        switch (user.role) {
+          case "legal":
+            Model = LegalDetails;
+            break;
+          case "financial":
+            Model = FinancialDetails;
+            break;
+          case "inauditor":
+            extra = { ...extra, internal: true };
+          case "extauditor":
+            Model = FinancialDetails;
+            break;
+          case "consultant":
+            Model = ConsultantDetails;
+            break;
+          default:
+            Model = SocietyDetails;
+            break;
+        }
+        try {
+          await Model({ ...user, ...extra }).save();
+        } catch (err) {
+          console.log(err, `Cannot create user ${user.name}`);
+          Errors.push(user);
+        }
+      })
+    );
+    req
+      .status(200)
+      .json({ msg: "Users Created Successfully", userErrors: Errors });
+    return;
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Server error" });
+    return;
+  }
+});
 
 /**
  * @route       POST api/users
