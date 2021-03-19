@@ -133,8 +133,29 @@ router.post(
       let details;
       switch (UserObj.role) {
         case "extauditor":
+          details = new AuditorDetails({
+            userId: user.id,
+            internal: false,
+          });
+          break;
         case "intauditor":
           details = new AuditorDetails({
+            userId: user.id,
+            internal: true,
+          });
+          break;
+        case "legal":
+          details = new LegalDetails({
+            userId: user.id,
+          });
+          break;
+        case "financial":
+          details = new FinancialDetails({
+            userId: user.id,
+          });
+          break;
+        case "consultant":
+          details = new ConsultantDetails({
             userId: user.id,
           });
           break;
