@@ -157,12 +157,12 @@ router.get("/financials", auth, async (req, res) => {
 router.get("/prof", auth, async (req, res) => {
   try {
     const sent = await Requests.find({
-      receiverId: Types.ObjectId(req.user.id),
-    }).populate("senderId");
-
-    const received = await Requests.find({
       senderId: Types.ObjectId(req.user.id),
     });
+
+    const received = await Requests.find({
+      receiverId: Types.ObjectId(req.user.id),
+    }).populate("senderId");
 
     res.status(200).json({ sent, received });
     return;
