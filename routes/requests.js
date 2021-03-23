@@ -50,7 +50,8 @@ router.get("/audits", auth, async (req, res) => {
     const requests = await Requests.find({
       senderId: Types.ObjectId(req.user.id),
       receiverId:{$exists : true},
-    }).populate("receiverId", {
+    }).populate({
+      path: "receiverId",
       match: {
         role: "extauditor",
       },
@@ -80,7 +81,8 @@ router.get("/legal", auth, async (req, res) => {
     const requests = await Requests.find({
       senderId: Types.ObjectId(req.user.id),
       receiverId:{$exists : true},
-    }).populate("receiverId", {
+    }).populate({
+      path: "receiverId",
       match: {
         role: "legal",
       },
@@ -110,7 +112,8 @@ router.get("/consultants", auth, async (req, res) => {
     const requests = await Requests.find({
       senderId: Types.ObjectId(req.user.id),
       receiverId:{$exists : true},
-    }).populate("receiverId", {
+    }).populate({
+      path: "receiverId",
       match: {
         role: "consultant",
       },
@@ -139,7 +142,8 @@ router.get("/financials", auth, async (req, res) => {
     const requests = await Requests.find({
       senderId: Types.ObjectId(req.user.id),
       receiverId:{$exists : true},
-    }).populate("receiverId", {
+    }).populate({
+      path: "receiverId",
       match: {
         role: "financial",
       },
