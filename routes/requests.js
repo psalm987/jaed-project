@@ -46,6 +46,7 @@ router.get("/sent", auth, async (req, res) => {
  */
 router.get("/audits", auth, async (req, res) => {
   try {
+    console.log("Get Audits");
     const requests = await Requests.find({
       senderId: Types.ObjectId(req.user.id),
     }).populate("receiverId", {
@@ -74,6 +75,7 @@ router.get("/audits", auth, async (req, res) => {
  */
 router.get("/legal", auth, async (req, res) => {
   try {
+    console.log("Get Legal");
     const requests = await Requests.find({
       senderId: Types.ObjectId(req.user.id),
     }).populate("receiverId", {
@@ -81,6 +83,7 @@ router.get("/legal", auth, async (req, res) => {
         role: "legal",
       },
     });
+    console.log("Legal", requests);
     res
       .status(200)
       .json(
@@ -101,6 +104,7 @@ router.get("/legal", auth, async (req, res) => {
  */
 router.get("/consultants", auth, async (req, res) => {
   try {
+    console.log("Get Consultants");
     const requests = await Requests.find({
       senderId: Types.ObjectId(req.user.id),
     }).populate("receiverId", {
@@ -128,6 +132,7 @@ router.get("/consultants", auth, async (req, res) => {
  */
 router.get("/financials", auth, async (req, res) => {
   try {
+    console.log("Get Financials");
     const requests = await Requests.find({
       senderId: Types.ObjectId(req.user.id),
     }).populate("receiverId", {
