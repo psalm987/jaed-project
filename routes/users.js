@@ -303,7 +303,7 @@ router.get("/search/:role", auth, async (req, res) => {
       case "intauditor":
         users = await AuditorDetails.find({ isApproved: true, internal: true });
         break;
-      case "finance":
+      case "financial":
         users = await FinancialDetails.find({ isApproved: true });
         break;
       case "legal":
