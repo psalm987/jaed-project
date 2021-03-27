@@ -323,4 +323,30 @@ router.get("/search/:role", auth, async (req, res) => {
   }
 });
 
+/**
+ * @route       GET api/users/directory
+ * @description Get all users
+ * @access      Public
+ */
+
+router.get("/directory", async (req, res) => {
+  try {
+    const auditors = await AuditorDetails.find({
+      isApproved: true,
+      internal: { $ne: true },
+    });
+    const financials = await FinancialDetails.find({ isApproved: true });
+    const legals = await LegalDetails.find({ isApproved: true });
+    const consultants = await ConsultantDetails.find({ isApproved: true });
+    const societies = await SocietyDetails.find({ isApproved: true });
+    const users = { auditors, financials, legals, consultants, societies };
+    res.status(200).json(users);
+    return;
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ msg: "Server error" });
+    return;
+  }
+});
+
 module.exports = router;
