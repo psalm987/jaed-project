@@ -338,7 +338,7 @@ router.get("/directory", async (req, res) => {
     const financials = await FinancialDetails.find({ isApproved: true });
     const legals = await LegalDetails.find({ isApproved: true });
     const consultants = await ConsultantDetails.find({ isApproved: true });
-    const societies = await SocietyDetails.find({ isApproved: true });
+    const societies = await SocietyDetails.find({ approved: true });
     const users = { auditors, financials, legals, consultants, societies };
     res.status(200).json(users);
     return;
