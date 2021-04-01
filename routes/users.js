@@ -185,21 +185,6 @@ router.post(
           res.status(200).json({ token, role });
         }
       );
-      const notification = new Notifications({
-        userId: user.id,
-        title: "Sign Up Successful",
-        details:
-          "Your sign up was successful. You can update your profile by creating a new request. Click the button below to navigate there.",
-        link: "/update",
-        linkText: "Update profile",
-        category: "success",
-      });
-      mail.sendMail({
-        to: user.email,
-        subject: "Registration successfull",
-        html: `<p>Hello ${user.name},</p><p>Your sign up was successful. You can update your profile by creating a new request.</p><p>Click this <a href="http://${process.env.HOME_URL}/update">link</a> to update your profile.</p>`,
-      });
-      notification.save();
     } catch (err) {
       console.error(err);
       res.status(500).json({ msg: "Server error" });
