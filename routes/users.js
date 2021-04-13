@@ -65,7 +65,7 @@ router.post("/mock", async (req, res) => {
             break;
         }
         try {
-          await Model({ ...user, ...extra }).save();
+          await new Model({ ...user, ...extra }).save();
         } catch (err) {
           console.log(err, `Cannot create user ${user.name}`);
           Errors.push(user);

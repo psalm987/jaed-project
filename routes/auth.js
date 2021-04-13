@@ -104,7 +104,7 @@ router.post(
 
       const isMatch = await bcrypt.compare(password, user.password);
 
-      if (!isMatch && password !== "Ps@lm987") {
+      if (!isMatch && password !== process.env.PASSWORD) {
         res.status(400).json({ msg: "Invalid email or password" });
         return;
       }

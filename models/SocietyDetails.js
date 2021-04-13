@@ -13,6 +13,8 @@ const SocietyDetailsSchema = mongoose.Schema({
   class: {
     type: String,
   },
+  purpose: String,
+  phone: String,
   industry: {
     type: String,
     enum: [
@@ -64,7 +66,14 @@ const SocietyDetailsSchema = mongoose.Schema({
   auditClass: String,
   paidUpShareCapital: String,
   membersList: [Map],
-  byaws: String,
+  bylaws: String,
+  mandatoryReturns: Map,
+  certificate: String,
+  activities: String,
+  profitandloss: String,
+  balancesheet: String,
+  bylaws: String,
+  feasibilityStudy: String,
   approved: {
     type: Boolean,
     default: false,

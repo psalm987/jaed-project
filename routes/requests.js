@@ -49,7 +49,7 @@ router.get("/audits", auth, async (req, res) => {
     console.log("Get Audits");
     const requests = await Requests.find({
       senderId: Types.ObjectId(req.user.id),
-      receiverId:{$exists : true},
+      receiverId: { $exists: true },
     }).populate({
       path: "receiverId",
       match: {
@@ -80,7 +80,7 @@ router.get("/legal", auth, async (req, res) => {
     console.log("Get Legal");
     const requests = await Requests.find({
       senderId: Types.ObjectId(req.user.id),
-      receiverId:{$exists : true},
+      receiverId: { $exists: true },
     }).populate({
       path: "receiverId",
       match: {
@@ -111,7 +111,7 @@ router.get("/consultants", auth, async (req, res) => {
     console.log("Get Consultants");
     const requests = await Requests.find({
       senderId: Types.ObjectId(req.user.id),
-      receiverId:{$exists : true},
+      receiverId: { $exists: true },
     }).populate({
       path: "receiverId",
       match: {
@@ -141,7 +141,7 @@ router.get("/financials", auth, async (req, res) => {
     console.log("Get Financials");
     const requests = await Requests.find({
       senderId: Types.ObjectId(req.user.id),
-      receiverId:{$exists : true},
+      receiverId: { $exists: true },
     }).populate({
       path: "receiverId",
       match: {
@@ -274,7 +274,6 @@ router.post("/approve/:id", auth, async (req, res) => {
     if (["admin", "superAdmin"].includes(req.user.role) && request.toAdmin) {
       await request.updateOne({ status: "Approved" });
       if (request.changeProfile) {
-        console.log("Change Profile...");
         let update = {};
         request.content.map((item) => {
           update = { ...update, [`${item.propName}`]: item.value };
@@ -291,12 +290,20 @@ router.post("/approve/:id", auth, async (req, res) => {
         switch (request.senderId.role) {
           case "society":
             console.log("User...", request.senderId);
-            await SocietyDetails.findOneAndUpdate(
+            let { mandatoryReturns } = await SocietyDetails.findOneAndUpdate(
               { userId: Types.ObjectId(request.senderId._id) },
               update,
               { upsert: true }
             );
-            console.log("Updated...");
+            request
+              .filter((item) => item.type === "file")
+              .map((item) => {
+                mandatoryReturns = {
+                  ...mandatoryReturns,
+                  [`${item.propName}`]: item,
+                };
+              });
+            
             break;
           case "extauditor":
           case "intauditor":
