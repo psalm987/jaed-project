@@ -29,7 +29,8 @@ router.get("/sent", auth, async (req, res) => {
     }
     const requests = await Requests.find(query)
       .populate("senderId", "name _id")
-      .select("_id title description status dateCreated senderId");
+      .select("_id title description status dateCreated senderId")
+      .sort("-dateCreated");
     res.status(200).json(requests);
     return;
   } catch (error) {
@@ -50,12 +51,14 @@ router.get("/audits", auth, async (req, res) => {
     const requests = await Requests.find({
       senderId: Types.ObjectId(req.user.id),
       receiverId: { $exists: true },
-    }).populate({
-      path: "receiverId",
-      match: {
-        role: "extauditor",
-      },
-    });
+    })
+      .populate({
+        path: "receiverId",
+        match: {
+          role: "extauditor",
+        },
+      })
+      .sort("-dateCreated");
     console.log("audits", requests);
     res
       .status(200)
@@ -81,12 +84,14 @@ router.get("/legal", auth, async (req, res) => {
     const requests = await Requests.find({
       senderId: Types.ObjectId(req.user.id),
       receiverId: { $exists: true },
-    }).populate({
-      path: "receiverId",
-      match: {
-        role: "legal",
-      },
-    });
+    })
+      .populate({
+        path: "receiverId",
+        match: {
+          role: "legal",
+        },
+      })
+      .sort("-dateCreated");
     console.log("Legal", requests);
     res
       .status(200)
@@ -112,12 +117,14 @@ router.get("/consultants", auth, async (req, res) => {
     const requests = await Requests.find({
       senderId: Types.ObjectId(req.user.id),
       receiverId: { $exists: true },
-    }).populate({
-      path: "receiverId",
-      match: {
-        role: "consultant",
-      },
-    });
+    })
+      .populate({
+        path: "receiverId",
+        match: {
+          role: "consultant",
+        },
+      })
+      .sort("-dateCreated");
     res
       .status(200)
       .json(
@@ -142,12 +149,14 @@ router.get("/financials", auth, async (req, res) => {
     const requests = await Requests.find({
       senderId: Types.ObjectId(req.user.id),
       receiverId: { $exists: true },
-    }).populate({
-      path: "receiverId",
-      match: {
-        role: "financial",
-      },
-    });
+    })
+      .populate({
+        path: "receiverId",
+        match: {
+          role: "financial",
+        },
+      })
+      .sort("-dateCreated");
 
     res
       .status(200)
@@ -171,11 +180,13 @@ router.get("/prof", auth, async (req, res) => {
   try {
     const sent = await Requests.find({
       senderId: Types.ObjectId(req.user.id),
-    });
+    }).sort("-dateCreated");
 
     const received = await Requests.find({
       receiverId: Types.ObjectId(req.user.id),
-    }).populate("senderId");
+    })
+      .populate("senderId")
+      .sort("-dateCreated");
 
     res.status(200).json({ sent, received });
     return;
@@ -194,6 +205,7 @@ router.get("/prof", auth, async (req, res) => {
 router.get("/:id", auth, async (req, res) => {
   try {
     const request = await Requests.findById(req.params.id)
+      .sort("-dateCreated")
       .populate("receiverId", "name")
       .populate("senderId", "name");
     if (!request) {
@@ -375,7 +387,7 @@ router.post("/cancel/:id", auth, async (req, res) => {
       res.status(400).status({ msg: "Not Authorized" });
       return;
     }
-    res.status(200).json({ msg: "Request approved" });
+    res.status(200).json({ msg: "Request cancelled" });
     return;
   } catch (err) {
     console.error(err);
