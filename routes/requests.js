@@ -295,7 +295,7 @@ router.post("/approve/:id", auth, async (req, res) => {
               update,
               { upsert: true }
             );
-            request
+            request.content
               .filter((item) => item.type === "file")
               .map((item) => {
                 mandatoryReturns = {
@@ -303,7 +303,6 @@ router.post("/approve/:id", auth, async (req, res) => {
                   [`${item.propName}`]: item,
                 };
               });
-            
             break;
           case "extauditor":
           case "intauditor":
