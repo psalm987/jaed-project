@@ -385,6 +385,8 @@ router.post("/cancel/:id", auth, async (req, res) => {
       (["admin", "superAdmin"].includes(req.user.role) && request.toAdmin)
     ) {
       await request.updateOne({ status: "Cancelled" });
+    } else if (request.receiverId === Types.ObjectId(req.user.id)) {
+      await request.updateOne({ status: "Cancelled" });
     } else {
       res.status(400).status({ msg: "Not Authorized" });
       return;
