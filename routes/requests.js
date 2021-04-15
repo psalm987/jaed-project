@@ -273,7 +273,7 @@ router.post("/", auth, async (req, res) => {
  * @description Approve a request
  * @access      Private
  */
-router.post("/approve/:id", auth, async (req, res) => {
+router.get("/approve/:id", auth, async (req, res) => {
   try {
     const request = await Requests.findById(req.params.id).populate(
       "senderId",
@@ -377,7 +377,7 @@ router.post("/approve/:id", auth, async (req, res) => {
  * @description Cancel a request
  * @access      Private
  */
-router.post("/cancel/:id", auth, async (req, res) => {
+router.get("/cancel/:id", auth, async (req, res) => {
   try {
     const request = await Requests.findById(req.params.id);
     if (
