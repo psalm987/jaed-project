@@ -185,6 +185,21 @@ router.post(
           res.status(200).json({ token, role });
         }
       );
+      const notification = new Notifications({
+        userId: user.id,
+        title: "Sign Up Successful",
+        details:
+          "Your sign up was successful. You can update your profile by creating a new request. Click the button below to navigate there.",
+        link: "/update",
+        linkText: "Update profile",
+        category: "success",
+      });
+      mail.sendMail({
+        to: user.email,
+        subject: "Registration successfull",
+        html: `<p>Hello ${user.name},</p><p>Your sign up was successful. You can update your profile by creating a new request.</p><p>Click this <a href="http://${process.env.HOME_URL}/update">link</a> to update your profile.</p>`,
+      });
+      notification.save();
     } catch (err) {
       console.error(err);
       res.status(500).json({ msg: "Server error" });
@@ -283,19 +298,31 @@ router.get("/search/:role", auth, async (req, res) => {
         users = await AuditorDetails.find({
           isApproved: true,
           internal: { $ne: true },
-        });
+        }).populate("userId", "email");
         break;
       case "intauditor":
-        users = await AuditorDetails.find({ isApproved: true, internal: true });
+        users = await AuditorDetails.find({
+          isApproved: true,
+          internal: true,
+        }).populate("userId", "email");
         break;
       case "financial":
-        users = await FinancialDetails.find({ isApproved: true });
+        users = await FinancialDetails.find({ isApproved: true }).populate(
+          "userId",
+          "email"
+        );
         break;
       case "legal":
-        users = await LegalDetails.find({ isApproved: true });
+        users = await LegalDetails.find({ isApproved: true }).populate(
+          "userId",
+          "email"
+        );
         break;
       case "consultant":
-        users = await ConsultantDetails.find({ isApproved: true });
+        users = await ConsultantDetails.find({ isApproved: true }).populate(
+          "userId",
+          "email"
+        );
         break;
       default:
         break;

@@ -357,6 +357,8 @@ router.post("/approve/:id", auth, async (req, res) => {
             break;
         }
       }
+    } else if (request.receiverId === Types.ObjectId(req.user.id)) {
+      await request.updateOne({ status: "Approved" });
     } else {
       res.status(400).status({ msg: "Not Authorized" });
       return;
