@@ -269,13 +269,13 @@ router.post("/", auth, async (req, res) => {
 });
 
 /**
- * @route       POST api/requests/approve/:id
+ * @route       POST api/requests/approve
  * @description Approve a request
  * @access      Private
  */
-router.get("/approve/:id", auth, async (req, res) => {
+router.post("/approve", auth, async (req, res) => {
   try {
-    const request = await Requests.findById(req.params.id).populate(
+    const request = await Requests.findById(req.body.id).populate(
       "senderId",
       "role"
     );
@@ -373,13 +373,13 @@ router.get("/approve/:id", auth, async (req, res) => {
 });
 
 /**
- * @route       POST api/requests/cancel/:id
+ * @route       POST api/requests/cancel
  * @description Cancel a request
  * @access      Private
  */
-router.get("/cancel/:id", auth, async (req, res) => {
+router.post("/cancel", auth, async (req, res) => {
   try {
-    const request = await Requests.findById(req.params.id);
+    const request = await Requests.findById(req.body.id);
     if (
       request.senderId.toString() === req.user.id ||
       (["admin", "superAdmin"].includes(req.user.role) && request.toAdmin)
