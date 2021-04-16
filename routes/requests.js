@@ -244,11 +244,25 @@ router.post("/approve", auth, async (req, res) => {
     const { id } = req.body;
     console.log("ID...", id);
     const request = await Requests.findById(id).populate("senderId", "role");
+    console.log(request, "Request Details...");
+    console.log(
+      "Request ID Details...",
+      request.receiverId,
+      "\n\nNext... \n\n",
+      Types.ObjectId(req.user.id)
+    );
     if (!request) {
       console.log("can't find request...");
       res.status(404).json({ msg: "No request found" });
       return;
     }
+    console.log(
+      "Request ID Details...",
+      request.receiverId,
+      "\n\nNext... \n\n",
+      Types.ObjectId(req.user.id)
+    );
+
     if (["admin", "superAdmin"].includes(req.user.role) && request.toAdmin) {
       await request.updateOne({ status: "Approved" });
       if (request.changeProfile) {
@@ -323,7 +337,10 @@ router.post("/approve", auth, async (req, res) => {
             break;
         }
       }
-    } else if (request.receiverId === Types.ObjectId(req.user.id)) {
+    } else if (
+      request.receiverId === Types.ObjectId(req.user.id) &&
+      !request.toAdmin
+    ) {
       await request.updateOne({ status: "Approved" });
     } else {
       res.status(400).status({ msg: "Not Authorized" });
