@@ -455,7 +455,7 @@ router.post("/edit/:id", auth, async (req, res) => {
       return;
     }
     const content = req.body.content || request.content;
-    const status = "pending";
+    const status = req.body.status || "Pending";
     await request.updateOne({ content, status });
     res.status(200).json(request);
     return;
