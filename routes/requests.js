@@ -235,40 +235,6 @@ router.get("/:id", auth, async (req, res) => {
 });
 
 /**
- * @route       POST api/requests
- * @description Create request
- * @access      Private
- */
-router.post("/", auth, async (req, res) => {
-  try {
-    const senderId = req.user.id;
-    const {
-      title,
-      description,
-      changeProfile,
-      receiverId,
-      content,
-      toAdmin,
-    } = req.body;
-    await new Requests({
-      senderId,
-      title,
-      description,
-      changeProfile,
-      receiverId,
-      content,
-      toAdmin,
-    }).save();
-    res.status(200).json({ msg: "Request made successfully" });
-    return;
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ msg: "Server Error" });
-    return;
-  }
-});
-
-/**
  * @route       POST api/requests/approve
  * @description Approve a request
  * @access      Private
@@ -279,6 +245,7 @@ router.post("/approve", auth, async (req, res) => {
     console.log("ID...", id);
     const request = await Requests.findById(id).populate("senderId", "role");
     if (!request) {
+      console.log("can't find request...");
       res.status(404).json({ msg: "Not found" });
       return;
     }
@@ -394,6 +361,40 @@ router.post("/cancel", auth, async (req, res) => {
     return;
   } catch (err) {
     console.error(err);
+    res.status(500).json({ msg: "Server Error" });
+    return;
+  }
+});
+
+/**
+ * @route       POST api/requests
+ * @description Create request
+ * @access      Private
+ */
+router.post("/", auth, async (req, res) => {
+  try {
+    const senderId = req.user.id;
+    const {
+      title,
+      description,
+      changeProfile,
+      receiverId,
+      content,
+      toAdmin,
+    } = req.body;
+    await new Requests({
+      senderId,
+      title,
+      description,
+      changeProfile,
+      receiverId,
+      content,
+      toAdmin,
+    }).save();
+    res.status(200).json({ msg: "Request made successfully" });
+    return;
+  } catch (error) {
+    console.error(error);
     res.status(500).json({ msg: "Server Error" });
     return;
   }
