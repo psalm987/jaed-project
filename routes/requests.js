@@ -339,10 +339,7 @@ router.post("/approve", auth, async (req, res) => {
             break;
         }
       }
-    } else if (
-      request.receiverId === Types.ObjectId(req.user.id) &&
-      !request.toAdmin
-    ) {
+    } else if (request.receiverId == req.user.id && !request.toAdmin) {
       console.log("receiver trying to get it done...");
       await request.updateOne({ status: "Approved" });
     } else {
@@ -371,7 +368,7 @@ router.post("/cancel", auth, async (req, res) => {
       (["admin", "superAdmin"].includes(req.user.role) && request.toAdmin)
     ) {
       await request.updateOne({ status: "Cancelled" });
-    } else if (request.receiverId === Types.ObjectId(req.user.id)) {
+    } else if (request.receiverId == req.user.id && !request.toAdmin) {
       await request.updateOne({ status: "Cancelled" });
     } else {
       res.status(400).status({ msg: "Not Authorized" });
