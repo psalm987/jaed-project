@@ -246,7 +246,7 @@ router.post("/approve", auth, async (req, res) => {
     const request = await Requests.findById(id).populate("senderId", "role");
     if (!request) {
       console.log("can't find request...");
-      res.status(404).json({ msg: "Not found" });
+      res.status(404).json({ msg: "No request found" });
       return;
     }
     if (["admin", "superAdmin"].includes(req.user.role) && request.toAdmin) {
