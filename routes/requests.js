@@ -275,10 +275,9 @@ router.post("/", auth, async (req, res) => {
  */
 router.post("/approve", auth, async (req, res) => {
   try {
-    console.log(req.body.id);
-    const request = await Requests.findById(
-      Types.ObjectId(req.body.id)
-    ).populate("senderId", "role");
+    const { id } = req.body;
+    console.log("ID...", id);
+    const request = await Requests.findById(id).populate("senderId", "role");
     if (!request) {
       res.status(404).json({ msg: "Not found" });
       return;
