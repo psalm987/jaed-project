@@ -257,10 +257,8 @@ router.post("/approve", auth, async (req, res) => {
       return;
     }
     console.log(
-      "Request ID Details...",
-      request.receiverId,
-      "\n\nNext... \n\n",
-      Types.ObjectId(req.user.id)
+      "Request ID Details... equal...",
+      request.receiverId === Types.ObjectId(req.user.id)
     );
 
     if (["admin", "superAdmin"].includes(req.user.role) && request.toAdmin) {
@@ -341,6 +339,7 @@ router.post("/approve", auth, async (req, res) => {
       request.receiverId === Types.ObjectId(req.user.id) &&
       !request.toAdmin
     ) {
+      console.log("receiver trying to get it done...");
       await request.updateOne({ status: "Approved" });
     } else {
       res.status(400).status({ msg: "Not Authorized" });
