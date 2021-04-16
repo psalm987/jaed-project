@@ -258,7 +258,11 @@ router.post("/approve", auth, async (req, res) => {
     }
     console.log(
       "Request ID Details... equal...",
-      request.receiverId === Types.ObjectId(req.user.id)
+      request.receiverId === Types.ObjectId(req.user.id),
+      "Second Attempt..",
+      Types.ObjectId(request.receiverId) === Types.ObjectId(req.user.id),
+      "Third attempt...",
+      request.receiverId === req.user.id
     );
 
     if (["admin", "superAdmin"].includes(req.user.role) && request.toAdmin) {
