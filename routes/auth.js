@@ -8,6 +8,10 @@ const User = require("../models/User");
 const Notifications = require("../models/Notifications");
 const SocietyDetails = require("../models/SocietyDetails");
 const { Types } = require("mongoose");
+const AuditorDetails = require("../models/AuditorDetails");
+const ConsultantDetails = require("../models/ConsultantDetails");
+const LegalDetails = require("../models/LegalDetails");
+const FinancialDetails = require("../models/FinancialDetails");
 /**
  * @route       GET api/auth
  * @description Get logged in user
@@ -32,25 +36,34 @@ router.get("/", auth, async (req, res) => {
     let details;
     let files = [];
 
-    switch (req.user.role) {
-      case "society":
-        await SocietyDetails.findOne(
-          { userId: Types.ObjectId(req.user.id) },
-          (err, result) => {
-            if (err) throw err;
-            details = result;
-          }
-        );
-        // await Files.find({ userId: req.user.id }, (err, result) => {
-        //   if (err) throw err;
-        //   result.forEach((element) => {
-        //     files.push(element);
-        //   });
-        // });
-        break;
-      default:
-        break;
+    const DetailsObj = (() => {
+      switch (req.user.role) {
+        case "society":
+          return SocietyDetails;
+        case "intauditor":
+        case "extauditor":
+          return AuditorDetails;
+        case "consultant":
+          return ConsultantDetails;
+        case "legal":
+          return LegalDetails;
+        case "financial":
+          return FinancialDetails;
+        default:
+          break;
+      }
+    })();
+
+    if (DetailsObj) {
+      await DetailsObj.findOne(
+        { userId: Types.ObjectId(req.user.id) },
+        (err, result) => {
+          if (err) throw err;
+          details = result;
+        }
+      );
     }
+
     let Response = {};
     Response.user = user.toJSON();
     if (details) {
