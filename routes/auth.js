@@ -36,23 +36,28 @@ router.get("/", auth, async (req, res) => {
     let details;
     let files = [];
 
-    const DetailsObj = (() => {
-      switch (req.user.role) {
-        case "society":
-          return SocietyDetails;
-        case "intauditor":
-        case "extauditor":
-          return AuditorDetails;
-        case "consultant":
-          return ConsultantDetails;
-        case "legal":
-          return LegalDetails;
-        case "financial":
-          return FinancialDetails;
-        default:
-          break;
-      }
-    })();
+    let DetailsObj;
+
+    switch (req.user.role) {
+      case "society":
+        DetailsObj = SocietyDetails;
+        break;
+      case "intauditor":
+      case "extauditor":
+        DetailsObj = AuditorDetails;
+        break;
+      case "consultant":
+        DetailsObj = ConsultantDetails;
+        break;
+      case "legal":
+        DetailsObj = LegalDetails;
+        break;
+      case "financial":
+        DetailsObj = FinancialDetails;
+        break;
+      default:
+        break;
+    }
 
     if (DetailsObj) {
       await DetailsObj.findOne(
