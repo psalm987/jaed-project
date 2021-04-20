@@ -1,19 +1,19 @@
 {
-  "short_name": "Coop-ss",
-  "name": "Cooperative and Social Security Management Information System",
+  "short_name": "React App",
+  "name": "Create React App Sample",
   "icons": [
     {
-      "src": "coat.ico",
+      "src": "favicon.ico",
       "sizes": "64x64 32x32 24x24 16x16",
       "type": "image/x-icon"
     },
     {
-      "src": "coat192.png",
+      "src": "logo192.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "coat512.png",
+      "src": "logo512.png",
       "type": "image/png",
       "sizes": "512x512"
     }
