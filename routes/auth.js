@@ -134,6 +134,66 @@ router.post(
         },
       };
 
+      let notifications = [];
+      await Notifications.find(
+        {
+          userId: user.id,
+        },
+        (err, doc) => {
+          if (err) throw err;
+          doc.map(async (notice, index) => {
+            notifications.push(notice);
+          });
+        }
+      );
+
+      let details;
+      let files = [];
+
+      let DetailsObj;
+
+      switch (user.role) {
+        case "society":
+          DetailsObj = SocietyDetails;
+          break;
+        case "intauditor":
+        case "extauditor":
+          DetailsObj = AuditorDetails;
+          break;
+        case "consultant":
+          DetailsObj = ConsultantDetails;
+          break;
+        case "legal":
+          DetailsObj = LegalDetails;
+          break;
+        case "financial":
+          DetailsObj = FinancialDetails;
+          break;
+        default:
+          break;
+      }
+
+      if (DetailsObj) {
+        await DetailsObj.findOne(
+          { userId: Types.ObjectId(user.id) },
+          (err, result) => {
+            if (err) throw err;
+            details = result;
+          }
+        );
+      }
+
+      let Response = {};
+      Response.user = user.toJSON();
+      if (details) {
+        Response.user = {
+          ...Response.user,
+          ...details.toJSON(),
+        };
+      }
+      Response.files = files;
+      Response.notifications = notifications;
+
       jwt.sign(
         payload,
         process.env.JWT_SECRET,
@@ -142,7 +202,8 @@ router.post(
         },
         (err, token) => {
           if (err) throw err;
-          res.json({ token });
+          Response.token = token;
+          res.status(200).json(Response);
         }
       );
       return;
