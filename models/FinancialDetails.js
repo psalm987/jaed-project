@@ -59,6 +59,9 @@ const FinancialDetailsSchema = mongoose.Schema({
   contactDegreeProofUrl: {
     type: String,
   },
+  cv: {
+    type: String,
+  },
 });
 
 module.exports = mongoose.model("FinancialDetails", FinancialDetailsSchema);

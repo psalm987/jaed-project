@@ -86,6 +86,9 @@ const AuditorDetailsSchema = mongoose.Schema({
   internal: {
     type: Boolean,
   },
+  cv: {
+    type: String,
+  },
 });
 
 module.exports = mongoose.model("AuditorDetails", AuditorDetailsSchema);
